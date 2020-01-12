@@ -18,6 +18,10 @@ class RatingsLoader:
     ratings_dict = {}
 
     def loadDataset(self):
+
+        self.productID_to_name = {}
+        self.name_to_productID = {}
+
         query = leancloud.Query('Rating')
         numOfRatings = query.count()
         ratings = query.select('uId', 'pId', 'rating', 'createAt').limit(numOfRatings).find()
@@ -38,6 +42,7 @@ class RatingsLoader:
                 productName = row[10]
                 self.productID_to_name[productID] = productName
                 self.name_to_productID[productName] = productID
+        print(len(self.name_to_productID))
         return data
 
     def getUserRatings(self, user):
