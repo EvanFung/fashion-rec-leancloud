@@ -25,7 +25,8 @@ from operator import itemgetter
 
 app = Flask(__name__)
 sockets = Sockets(app)
-
+productID_to_name = {}
+name_to_productID = {}
 # 动态路由
 app.register_blueprint(todos_view, url_prefix='/todos')
 
@@ -42,7 +43,20 @@ def get_top_n(predictions, n=10):
     return top_n
 
 
+#
 
+def getProductName(productID):
+    if productID in productID_to_name:
+        return productID_to_name[productID]
+    else:
+        return ""
+
+
+def getProductID(productName):
+    if productName in name_to_productID:
+        return name_to_productID[productName]
+    else:
+        return 0
 
 
 @app.route('/')
@@ -122,48 +136,60 @@ def python_version():
 
 @app.route('/rec/<int:userID>')
 def recommendItem(userID):
+    # ml = RatingsLoader()
+    # data = ml.loadDataset()
+    # trainset = data.build_full_trainset()
+    # sim_options = {'name': 'cosine', 'user_based': True}
+    #
+    # with open('styles4.csv', newline='', encoding='ISO-8859-1') as csvfile:
+    #     productReader = csv.reader(csvfile)
+    #     next(productReader)
+    #     for row in productReader:
+    #         productID = int(row[1])
+    #         productName = row[10]
+    #         productID_to_name[productID] = productName
+    #         name_to_productID[productName] = productID
+    # algo = KNNBasic(sim_options)
+    # algo.fit(trainset)
+    # simsMatrix = algo.compute_similarities()
+    #
+    # testUserInnerID = trainset.to_inner_uid('6')
+    # similarityRow = simsMatrix[testUserInnerID]
+    # similarUsers = []
+    # for innerID, score in enumerate(similarityRow):
+    #     if (innerID != testUserInnerID):
+    #         similarUsers.append((innerID, score))
+    # print(similarUsers)
+    # kNeighbors = heapq.nlargest(10, similarUsers, key=lambda t: t[1])
+    # candidates = defaultdict(float)
+    # for similarUser in kNeighbors:
+    #     innerID = similarUser[0]
+    #     userSimilarityScore = similarUser[1]
+    #     theirRatings = trainset.ur[innerID]
+    #     for rating in theirRatings:
+    #         candidates[rating[0]] += (rating[1] / 5.0) * userSimilarityScore
+    # watched = {}
+    # for itemID, rating in trainset.ur[testUserInnerID]:
+    #     watched[itemID] = 1
+    # pos = 0
+    # for itemID, ratingSum in sorted(candidates.items(), key=itemgetter(1), reverse=True):
+    #     if not itemID in watched:
+    #         productID = trainset.to_raw_iid(itemID)
+    #         print(ml.getProductName(int(productID)), ratingSum)
+    #         pos += 1
+    #         if (pos > 10):
+    #             break
     ml = RatingsLoader()
     data = ml.loadDataset()
     trainset = data.build_full_trainset()
     sim_options = {'name': 'cosine', 'user_based': True}
-    algo = KNNBasic(sim_options)
+    algo = KNNBasic(sim_options=sim_options)
     algo.fit(trainset)
-    simsMatrix = algo.compute_similarities()
-
-    testUserInnerID = trainset.to_inner_uid('5')
-    similarityRow = simsMatrix[testUserInnerID]
-    similarUsers = []
-    for innerID, score in enumerate(similarityRow):
-        if (innerID != testUserInnerID):
-            similarUsers.append((innerID, score))
-    kNeighbors = heapq.nlargest(10, similarUsers, key=lambda t: t[1])
-    candidates = defaultdict(float)
-    for similarUser in kNeighbors:
-        innerID = similarUser[0]
-        userSimilarityScore = similarUser[1]
-        theirRatings = trainset.ur[innerID]
-        for rating in theirRatings:
-            candidates[rating[0]] += (rating[1] / 5.0) * userSimilarityScore
-    print(candidates)
-    watched = {}
-    for itemID, rating in trainset.ur[testUserInnerID]:
-        watched[itemID] = 1
-    pos = 0
-    for itemID, ratingSum in sorted(candidates.items(), key=itemgetter(1), reverse=True):
-        if not itemID in watched:
-            productID = trainset.to_raw_iid(itemID)
-            print(productID, ratingSum)
-            pos += 1
-            if (pos > 10):
-                break
-    # algo = SVD()
-    # algo.fit(trainset)
-    # testset = trainset.build_anti_testset()
-    # predictions = algo.test(trainset)
-    # top_n = get_top_n(predictions)
-    # print(ml.getProductName(3213))
-    # for uid, user_ratings in top_n.items():
-    #     print(uid, [iid for (iid, _) in user_ratings])
+    testset = trainset.build_anti_testset()
+    predictions = algo.test(testset)
+    top_n = get_top_n(predictions)
+    for uid, user_ratings in top_n.items():
+        print(uid, [ml.getProductName(int(iid)) for (iid, _) in user_ratings])
     return jsonify({'Rec': 200})
 
 

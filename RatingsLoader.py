@@ -34,15 +34,23 @@ class RatingsLoader:
         reader = Reader(rating_scale=(0.5, 5))
         data = Dataset.load_from_df(df[['userID', 'itemID', 'rating']], reader)
         #build a dictionary with all products
-        with open(self.productsPath,newline='',encoding='ISO-8859-1') as csvfile:
-            productReader = csv.reader(csvfile)
-            next(productReader)
-            for row in productReader:
-                productID = int(row[1])
-                productName = row[10]
-                self.productID_to_name[productID] = productName
-                self.name_to_productID[productName] = productID
-        print(len(self.name_to_productID))
+        # with open(self.productsPath,newline='',encoding='ISO-8859-1') as csvfile:
+        #     productReader = csv.reader(csvfile)
+        #     next(productReader)
+        #     for row in productReader:
+        #         productID = int(row[1])
+        #         productName = row[10]
+        #         self.productID_to_name[productID] = productName
+        #         self.name_to_productID[productName] = productID
+        # print(len(self.name_to_productID))
+
+        # build a dictionary with products
+        q_product = leancloud.Query('Product')
+        num_of_products = q_product.count()
+        prods = q_product.select('pId','articleType','title').limit(num_of_products).find()
+        for prod in prods:
+            self.productID_to_name[prod.get('pId')] = prod.get('title')
+            self.name_to_productID[prod.get('title')] = prod.get('pId')
         return data
 
     def getUserRatings(self, user):
@@ -84,7 +92,7 @@ class RatingsLoader:
         if productID in self.productID_to_name:
             return self.productID_to_name[productID]
         else:
-            return ""
+            return "NOT FOUND"
 
     def getProductID(self, productName):
         if productName in self.name_to_productID:
