@@ -1,12 +1,8 @@
-import os
-import csv
-import sys
-import re
+
 import leancloud
 from surprise import Dataset
 from surprise import Reader
 from collections import defaultdict
-import numpy as np
 import pandas as pd
 
 
@@ -24,25 +20,17 @@ class RatingsLoader:
 
         query = leancloud.Query('Rating')
         numOfRatings = query.count()
-        ratings = query.select('uId', 'pId', 'rating', 'createAt').limit(numOfRatings).find()
+        ratings = query.select('objectId','uId', 'pId', 'rating', 'createAt').limit(numOfRatings).find()
         self.ratings_dict = {
+            # 'objectId': [rating.get('objectId') for rating in ratings],
             'userID': [rating.get('uId') for rating in ratings],
             'itemID': [rating.get('pId') for rating in ratings],
             'rating': [rating.get('rating') for rating in ratings],
         }
         df = pd.DataFrame(self.ratings_dict)
         reader = Reader(rating_scale=(0.5, 5))
-        data = Dataset.load_from_df(df[['userID', 'itemID', 'rating']], reader)
-        #build a dictionary with all products
-        # with open(self.productsPath,newline='',encoding='ISO-8859-1') as csvfile:
-        #     productReader = csv.reader(csvfile)
-        #     next(productReader)
-        #     for row in productReader:
-        #         productID = int(row[1])
-        #         productName = row[10]
-        #         self.productID_to_name[productID] = productName
-        #         self.name_to_productID[productName] = productID
-        # print(len(self.name_to_productID))
+        data = Dataset.load_from_df(df[['userID', 'itemID', 'rating',]], reader)
+
 
         # build a dictionary with products
         q_product = leancloud.Query('Product')

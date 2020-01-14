@@ -3,25 +3,13 @@ import sys
 from datetime import datetime
 
 import leancloud
-
 from flask import Flask, jsonify, request
 from flask import render_template
 from flask_sockets import Sockets
 from leancloud import LeanCloudError
-
 from views.todos import todos_view
-from RatingsLoader import RatingsLoader
-import csv
-import pandas as pd
 from collections import defaultdict
-import heapq
-from surprise import NormalPredictor
-from surprise import Dataset
-from surprise import Reader
-from surprise.model_selection import cross_validate
-from surprise import SVD
-from surprise import KNNBasic
-from operator import itemgetter
+
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -42,21 +30,6 @@ def get_top_n(predictions, n=10):
         top_n[uid] = user_ratings[:n]
     return top_n
 
-
-#
-
-def getProductName(productID):
-    if productID in productID_to_name:
-        return productID_to_name[productID]
-    else:
-        return ""
-
-
-def getProductID(productName):
-    if productName in name_to_productID:
-        return name_to_productID[productName]
-    else:
-        return 0
 
 
 @app.route('/')
@@ -134,7 +107,7 @@ def python_version():
     return jsonify({"python-version": sys.version})
 
 
-@app.route('/rec/<int:userID>')
+@app.route('/rec/<string:userID>')
 def recommendItem(userID):
     # ml = RatingsLoader()
     # data = ml.loadDataset()
@@ -179,19 +152,25 @@ def recommendItem(userID):
     #         pos += 1
     #         if (pos > 10):
     #             break
-    ml = RatingsLoader()
-    data = ml.loadDataset()
-    trainset = data.build_full_trainset()
-    sim_options = {'name': 'cosine', 'user_based': True}
-    algo = KNNBasic(sim_options=sim_options)
-    algo.fit(trainset)
-    testset = trainset.build_anti_testset()
-    predictions = algo.test(testset)
-    top_n = get_top_n(predictions)
-    for uid, user_ratings in top_n.items():
-        print(uid, [ml.getProductName(int(iid)) for (iid, _) in user_ratings])
-    return jsonify({'Rec': 200})
-
+    # leancloud.cloudfunc.run.local('build_rec_list')
+    qRec = leancloud.Query('Recommend')
+    results = qRec.equal_to('uId',userID).limit(1).find()
+    # ml = RatingsLoader()
+    # ml.loadDataset()
+    # for result in results:
+    #     print(result.get('uId'))
+    #     print(result.get('pIds'))
+    # leancloud.cloudfunc.run.local('update_rec_list')
+    if len(results) > 0:
+        return jsonify({
+            'uId': results[0].get('uId'),
+            'pIds': results[0].get('pIds'),
+            'pTitles': results[0].get('pTitles')
+        })
+    else:
+        return jsonify({
+            'response':'NO RECOMMEND ITEM'
+        })
 
 @app.route('/api/todos', methods=['GET', 'POST'])
 def todos():
