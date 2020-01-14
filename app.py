@@ -25,8 +25,7 @@ from operator import itemgetter
 
 app = Flask(__name__)
 sockets = Sockets(app)
-productID_to_name = {}
-name_to_productID = {}
+
 # 动态路由
 app.register_blueprint(todos_view, url_prefix='/todos')
 
@@ -43,20 +42,7 @@ def get_top_n(predictions, n=10):
     return top_n
 
 
-#
 
-def getProductName(productID):
-    if productID in productID_to_name:
-        return productID_to_name[productID]
-    else:
-        return ""
-
-
-def getProductID(productName):
-    if productName in name_to_productID:
-        return name_to_productID[productName]
-    else:
-        return 0
 
 
 @app.route('/')
@@ -140,20 +126,11 @@ def recommendItem(userID):
     data = ml.loadDataset()
     trainset = data.build_full_trainset()
     sim_options = {'name': 'cosine', 'user_based': True}
-
-    with open('styles4.csv', newline='', encoding='ISO-8859-1') as csvfile:
-        productReader = csv.reader(csvfile)
-        next(productReader)
-        for row in productReader:
-            productID = int(row[1])
-            productName = row[10]
-            productID_to_name[productID] = productName
-            name_to_productID[productName] = productID
     algo = KNNBasic(sim_options)
     algo.fit(trainset)
     simsMatrix = algo.compute_similarities()
 
-    testUserInnerID = trainset.to_inner_uid('4')
+    testUserInnerID = trainset.to_inner_uid('5')
     similarityRow = simsMatrix[testUserInnerID]
     similarUsers = []
     for innerID, score in enumerate(similarityRow):
@@ -167,6 +144,7 @@ def recommendItem(userID):
         theirRatings = trainset.ur[innerID]
         for rating in theirRatings:
             candidates[rating[0]] += (rating[1] / 5.0) * userSimilarityScore
+    print(candidates)
     watched = {}
     for itemID, rating in trainset.ur[testUserInnerID]:
         watched[itemID] = 1
