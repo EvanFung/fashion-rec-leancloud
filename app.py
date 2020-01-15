@@ -154,7 +154,7 @@ def recommendItem(userID):
     #             break
     # leancloud.cloudfunc.run.local('build_rec_list')
     qRec = leancloud.Query('Recommend')
-    results = qRec.equal_to('uId',userID).limit(1).find()
+    results = qRec.equal_to('uId', userID).limit(1).find()
     # ml = RatingsLoader()
     # ml.loadDataset()
     # for result in results:
@@ -169,7 +169,7 @@ def recommendItem(userID):
         })
     else:
         return jsonify({
-            'response':'NO RECOMMEND ITEM'
+            'response': 'NO RECOMMEND ITEM'
         })
 
 @app.route('/api/todos', methods=['GET', 'POST'])

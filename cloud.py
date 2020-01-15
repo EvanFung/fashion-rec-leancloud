@@ -40,7 +40,8 @@ def build_rec_list(**params):
         rec.set('pTitles', [ml.getProductName(int(iid)) for (iid, _) in user_ratings])
         rec.save()
         # print(uid, [iid for (iid, _) in user_ratings])
-    return jsonify({'Success': 200})
+    # return jsonify({'Success': 200})
+    print('is success run')
 
 
 @engine.define('update_rec_list')
@@ -65,7 +66,7 @@ def update_rec_list(**params):
         destroy_list.append(recommend)
     Object.destroy_all(destroy_list)
     # update recommend data for each users
-    print(cloudfunc.run.local('build_rec_list'))
+    cloudfunc.run.local('build_rec_list')
 
 
 
