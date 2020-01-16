@@ -9,6 +9,7 @@ import pandas as pd
 class RatingsLoader:
     productID_to_name = {}
     name_to_productID = {}
+    productID_to_product = {}
     ratingsPath = ''
     productsPath = 'styles4.csv'
     ratings_dict = {}
@@ -20,7 +21,8 @@ class RatingsLoader:
 
         query = leancloud.Query('Rating')
         numOfRatings = query.count()
-        ratings = query.select('objectId','uId', 'pId', 'rating', 'createAt').limit(numOfRatings).find()
+        ratings = query.select('objectId','uId', 'pId', 'rating','productStr', 'createAt').limit(numOfRatings).find()
+        # print(ratings[0].get('productStr'))
         self.ratings_dict = {
             # 'objectId': [rating.get('objectId') for rating in ratings],
             'userID': [rating.get('uId') for rating in ratings],
@@ -29,17 +31,63 @@ class RatingsLoader:
         }
         df = pd.DataFrame(self.ratings_dict)
         reader = Reader(rating_scale=(0.5, 5))
-        data = Dataset.load_from_df(df[['userID', 'itemID', 'rating',]], reader)
+        data = Dataset.load_from_df(df[['userID', 'itemID', 'rating']], reader)
 
 
         # build a dictionary with products
         q_product = leancloud.Query('Product')
         num_of_products = q_product.count()
-        prods = q_product.select('pId','articleType','title').limit(num_of_products).find()
+        prods = q_product.limit(num_of_products).find()
         for prod in prods:
             self.productID_to_name[prod.get('pId')] = prod.get('title')
             self.name_to_productID[prod.get('title')] = prod.get('pId')
+            self.productID_to_product[prod.get('pId')] = {
+                'objectId': prod.get('objectId'),
+                'pId': prod.get('pId'),
+                'articleType': prod.get('articleType'),
+                'baseColour': prod.get('baseColour'),
+                'createBy': prod.get('createBy'),
+                'description': prod.get('description'),
+                'gender': prod.get('gender'),
+                'imageUrl': prod.get('imageUrl'),
+                'mainCategory': prod.get('mainCategory'),
+                'subCategory': prod.get('subCategory'),
+                'numOfRating': prod.get('numOfRating'),
+                'price': prod.get('price'),
+                'rating': prod.get('rating'),
+                'season': prod.get('season'),
+                'title': prod.get('title'),
+                'usage': prod.get('usage'),
+                'year': prod.get('year'),
+            }
         return data
+
+    def get_products_dict(self):
+        q_product = leancloud.Query('Product')
+        num_of_products = q_product.count()
+        prods = q_product.limit(num_of_products).find()
+        for prod in prods:
+            self.productID_to_name[prod.get('pId')] = prod.get('title')
+            self.name_to_productID[prod.get('title')] = prod.get('pId')
+            self.productID_to_product[prod.get('pId')] = {
+                'objectId': prod.get('objectId'),
+                'pId': prod.get('pId'),
+                'articleType': prod.get('articleType'),
+                'baseColour': prod.get('baseColour'),
+                'createBy': prod.get('createBy'),
+                'description': prod.get('description'),
+                'gender': prod.get('gender'),
+                'imageUrl': prod.get('imageUrl'),
+                'mainCategory': prod.get('mainCategory'),
+                'subCategory': prod.get('subCategory'),
+                'numOfRating': prod.get('numOfRating'),
+                'price': prod.get('price'),
+                'rating': prod.get('rating'),
+                'season': prod.get('season'),
+                'title': prod.get('title'),
+                'usage': prod.get('usage'),
+                'year': prod.get('year'),
+            }
 
     def getUserRatings(self, user):
         userRatings = []
@@ -87,3 +135,9 @@ class RatingsLoader:
             return self.name_to_productID[productName]
         else:
             return 0
+
+    def getProduct(self,productID):
+        if productID in self.productID_to_product:
+            return self.productID_to_product[productID]
+        else:
+            return "NOT FOUND"

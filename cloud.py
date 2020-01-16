@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import json
 from leancloud import Engine
 from leancloud import LeanEngineError
 from leancloud import Object
@@ -31,16 +32,14 @@ def build_rec_list(**params):
     testset = trainset.build_anti_testset()
     predictions = algo.test(testset)
     top_n = get_top_n(predictions)
-
     Recommend = Object.extend('Recommend')
     for uid, user_ratings in top_n.items():
         rec = Recommend()
         rec.set('uId', uid)
         rec.set('pIds', [iid for (iid, _) in user_ratings])
         rec.set('pTitles', [ml.getProductName(int(iid)) for (iid, _) in user_ratings])
+        rec.set('products', [json.dumps(ml.getProduct(int(iid))) for (iid, _) in user_ratings])
         rec.save()
-        # print(uid, [iid for (iid, _) in user_ratings])
-    # return jsonify({'Success': 200})
     print('is success run')
 
 
@@ -82,6 +81,7 @@ def before_todo_save(todo):
 def get_top_n(predictions, n=10):
     top_n = defaultdict(list)
     for uid, iid, true_r, est, _ in predictions:
+
         top_n[uid].append((iid, est))
 
     for uid, user_ratings in top_n.items():

@@ -9,7 +9,8 @@ from flask_sockets import Sockets
 from leancloud import LeanCloudError
 from views.todos import todos_view
 from collections import defaultdict
-
+from RatingsLoader import RatingsLoader
+import json
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -109,63 +110,16 @@ def python_version():
 
 @app.route('/rec/<string:userID>')
 def recommendItem(userID):
-    # ml = RatingsLoader()
-    # data = ml.loadDataset()
-    # trainset = data.build_full_trainset()
-    # sim_options = {'name': 'cosine', 'user_based': True}
-    #
-    # with open('styles4.csv', newline='', encoding='ISO-8859-1') as csvfile:
-    #     productReader = csv.reader(csvfile)
-    #     next(productReader)
-    #     for row in productReader:
-    #         productID = int(row[1])
-    #         productName = row[10]
-    #         productID_to_name[productID] = productName
-    #         name_to_productID[productName] = productID
-    # algo = KNNBasic(sim_options)
-    # algo.fit(trainset)
-    # simsMatrix = algo.compute_similarities()
-    #
-    # testUserInnerID = trainset.to_inner_uid('6')
-    # similarityRow = simsMatrix[testUserInnerID]
-    # similarUsers = []
-    # for innerID, score in enumerate(similarityRow):
-    #     if (innerID != testUserInnerID):
-    #         similarUsers.append((innerID, score))
-    # print(similarUsers)
-    # kNeighbors = heapq.nlargest(10, similarUsers, key=lambda t: t[1])
-    # candidates = defaultdict(float)
-    # for similarUser in kNeighbors:
-    #     innerID = similarUser[0]
-    #     userSimilarityScore = similarUser[1]
-    #     theirRatings = trainset.ur[innerID]
-    #     for rating in theirRatings:
-    #         candidates[rating[0]] += (rating[1] / 5.0) * userSimilarityScore
-    # watched = {}
-    # for itemID, rating in trainset.ur[testUserInnerID]:
-    #     watched[itemID] = 1
-    # pos = 0
-    # for itemID, ratingSum in sorted(candidates.items(), key=itemgetter(1), reverse=True):
-    #     if not itemID in watched:
-    #         productID = trainset.to_raw_iid(itemID)
-    #         print(ml.getProductName(int(productID)), ratingSum)
-    #         pos += 1
-    #         if (pos > 10):
-    #             break
-    # leancloud.cloudfunc.run.local('build_rec_list')
     qRec = leancloud.Query('Recommend')
+    # it will return an array, but we only need the first result.
     results = qRec.equal_to('uId', userID).limit(1).find()
-    # ml = RatingsLoader()
-    # ml.loadDataset()
-    # for result in results:
-    #     print(result.get('uId'))
-    #     print(result.get('pIds'))
-    # leancloud.cloudfunc.run.local('update_rec_list')
+
+    print(results[0].get('products')[0])
     if len(results) > 0:
         return jsonify({
             'uId': results[0].get('uId'),
             'pIds': results[0].get('pIds'),
-            'pTitles': results[0].get('pTitles')
+            'products': [product for product in results[0].get('products')]
         })
     else:
         return jsonify({
