@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="954f5ba4-5b8b-4428-b7a1-af064446fa41" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/model/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/model/recommend.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/cloud.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -111,7 +108,11 @@
       <workItem from="1578797271192" duration="23969000" />
       <workItem from="1578877529373" duration="7622000" />
       <workItem from="1579019133811" duration="5116000" />
-      <workItem from="1579076629165" duration="2841000" />
+      <workItem from="1579076629165" duration="3103000" />
+      <workItem from="1579605608465" duration="462000" />
+      <workItem from="1580406608559" duration="348000" />
+      <workItem from="1580464941696" duration="177000" />
+      <workItem from="1580660038859" duration="888000" />
     </task>
     <task id="LOCAL-00001" summary="merged">
       <created>1579004188100</created>

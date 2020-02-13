@@ -43,6 +43,8 @@ def build_rec_list(**params):
     print('is success run')
 
 
+
+
 @engine.define('update_rec_list')
 def update_rec_list(**params):
     qRec = Query('Recommend')
